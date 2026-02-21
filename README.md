@@ -1,8 +1,11 @@
 # Foodsave
 
 #Progress
-21/2 rough prototype
-- single file hardcode
+21/2 rough prototype - single file hardcode
+
+
+
+
 
 #Todo
 1. Setup backend for leaderboard
