@@ -15,20 +15,17 @@ struct SafetyCheckerView: View {
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color(.systemBackground).ignoresSafeArea()
             
             switch page {
             case .home:
                 HomePage(page: $page)
-                
             case .form:
                 FormPage(page: $page,
                          riskScore: $riskScore,
                          resultText: $resultText)
-                
             case .analyzing:
-                AnalyzingPage(page: $page)
-                
+                AnalyzingPage()
             case .result:
                 ResultPage(page: $page,
                            score: riskScore,
@@ -56,7 +53,7 @@ struct HomePage: View {
             
             Text("Food Safety Checker")
                 .font(.title)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Button(action: {
                 page = .form
@@ -65,12 +62,12 @@ struct HomePage: View {
                     .padding()
                     .frame(width: 200)
                     .background(Color.green)
-                    .foregroundColor(.black)
+                    .foregroundColor(.white)
                     .cornerRadius(10)
             }
             
             Text(randomTip)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
                 .padding()
         }
     }
@@ -101,14 +98,11 @@ struct FormPage: View {
     
     @State private var leaked = false
     
-    @State private var useByPastDays = 0
-    @State private var bestBeforePastMonths = 0
-    
     @State private var storageDays = 0
     @State private var storageTemp = 5
     
     var isPerishable: Bool {
-        return !(category == "Snacks" || category == "Beverages") &&
+        !(category == "Snacks" || category == "Beverages") &&
         !(type == "Packaged" || type == "Canned")
     }
     
@@ -118,7 +112,7 @@ struct FormPage: View {
                 
                 Text("Food")
                     .font(.title2)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 
                 Picker("Category", selection: $category) {
                     Text("Carbohydrates").tag("Carbohydrates")
@@ -147,7 +141,6 @@ struct FormPage: View {
                 Toggle("Leaked/Damaged", isOn: $leaked)
                 
                 Stepper("Days Stored: \(storageDays)", value: $storageDays, in: 0...30)
-                
                 Stepper("Storage Temp: \(storageTemp)°C", value: $storageTemp, in: -30...40)
                 
                 Button("Start Analysis") {
@@ -159,20 +152,17 @@ struct FormPage: View {
                 }
                 .padding()
                 .background(Color.green)
-                .foregroundColor(.black)
+                .foregroundColor(.white)
                 .cornerRadius(10)
             }
-            .foregroundColor(.white)
+            .foregroundColor(.primary)
             .padding()
         }
     }
     
     func analyze() {
-        
-        // HARD OVERRIDES
         if (moldy && isPerishable) ||
             rottenEgg ||
-            (fishy && category == "Fish") ||
             leaked ||
             (isPerishable && storageTemp > 20 && storageDays > 0) {
             
@@ -183,27 +173,22 @@ struct FormPage: View {
         
         var score = 0
         
-        // APPEARANCE
         if moldy { score += 30 }
         if discoloration { score += 10 }
         if cloudy { score += 10 }
         
-        // SMELL
         if sour { score += 15 }
         if alcoholic { score += 10 }
         if fishy { score += 15 }
         
-        // TEXTURE
         if slimy { score += 25 }
         if sticky { score += 15 }
         if mushy { score += 10 }
         if dry { score += 5 }
         
-        // CATEGORY
         if category == "Dairy" { score += 5 }
         if category == "Meat" { score += 8 }
         
-        // STORAGE
         if isPerishable && storageDays > 3 { score += 20 }
         if isPerishable && storageDays > 5 { score += 40 }
         
@@ -227,14 +212,12 @@ struct FormPage: View {
 }
 
 struct AnalyzingPage: View {
-    @Binding var page: SafetyCheckerView.PageState
-    
     var body: some View {
         VStack(spacing: 20) {
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: .green))
             Text("Analyzing...")
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
         }
     }
 }
@@ -250,19 +233,19 @@ struct ResultPage: View {
             
             Text("Analysis Results")
                 .font(.title)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Gauge(value: Double(score), in: 0...100) {
                 Text("")
             }
             .gaugeStyle(.accessoryCircularCapacity)
-            .tint(gradient)
+            .tint(Gradient(colors: [.green, .yellow, .orange, .red]))
             
             Text(explanation)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             
             Text("This tool provides general guidance only and may not always be accurate. When in doubt, consult a food safety professional or discard the food.")
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
                 .font(.footnote)
             
             Button("Back to Safety Checker") {
@@ -270,12 +253,8 @@ struct ResultPage: View {
             }
             .padding()
             .background(Color.green)
-            .foregroundColor(.black)
+            .foregroundColor(.white)
             .cornerRadius(10)
         }
-    }
-    
-    var gradient: Gradient {
-        Gradient(colors: [.green, .yellow, .orange, .red])
     }
 }
