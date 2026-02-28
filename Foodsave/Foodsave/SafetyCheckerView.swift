@@ -98,30 +98,24 @@ private struct Assessment {
     var reasons: [String]     // “rules fired”
 }
 
-private func isPerishable(category: String, type: String) -> Bool {
-    // NOTE (assumption): simple mapping for a prototype to reduce uncertainty-driven waste.
-    // - Meat/Dairy/Fruits+Veg are perishable.
-    // - Carbohydrates are perishable when “Fresh” or “Opened”.
-    // - Snacks/Beverages are usually less perishable unless “Opened”.
-    let alwaysPerishable: Set<String> = ["Meat", "Dairy", "Vegetables/Fruits"]
-    if alwaysPerishable.contains(category) { return true }
+private func isPerishable(type: String) -> Bool {
 
-    if category == "Carbohydrates" {
-        return type == "Fresh" || type == "Opened (after opening)"
+    if type == "Frozen" {
+        return false
     }
 
-    if category == "Snacks" || category == "Beverages" {
-        return type == "Opened (after opening)"
+    if type == "Packaged/Canned (unopened)" {
+        return false
     }
 
-    // Fallback
-    return type == "Fresh" || type == "Opened (after opening)"
+    // Raw, Cooked, Opened → perishable
+    return true
 }
 
 private func assess(_ obs: FoodObservation) -> Assessment {
     var reasons: [String] = []
     let daysStored = obs.storageMinutesTotal / (24 * 60)
-    let perishable = isPerishable(category: obs.category, type: obs.type)
+    let perishable = isPerishable(type: obs.type)
 
     // Key public-health concepts (high level):
     // “Danger zone” roughly 4–60°C; time matters (2 hours, or 1 hour if very hot).
@@ -242,7 +236,7 @@ struct FormPage: View {
     @Binding var resultText: String
 
     private let categories = ["Carbohydrates", "Vegetables/Fruits", "Meat", "Dairy", "Snacks", "Beverages"]
-    private let types = ["Fresh", "Packaged (unopened)", "Canned (unopened)", "Opened (after opening)"]
+    private let types = ["Raw/Fresh", "Cooked/Baked", "Packaged/Canned (unopened)", "Frozen", "Opened"]
 
     @State private var category = ""
     @State private var type = ""
@@ -276,14 +270,14 @@ struct FormPage: View {
                     .font(.title)
                     .foregroundColor(.primary)
 
-                GroupBox("Food Type") {
+                GroupBox("Category") {
                     VStack(alignment: .leading, spacing: 12) {
                         Picker("Category", selection: $category) {
                             ForEach(categories, id: \.self) { Text($0).tag($0) }
                         }
                         .pickerStyle(MenuPickerStyle())
 
-                        Picker("Type", selection: $type) {
+                        Picker("State", selection: $type) {
                             ForEach(types, id: \.self) { Text($0).tag($0) }
                         }
                         .pickerStyle(MenuPickerStyle())
