@@ -147,13 +147,6 @@ private func assess(_ obs: FoodObservation) -> Assessment {
                           reasons: ["Perishable food stayed in room temperature for over 2 hours"])
     }
 
-    if perishable && daysStored >= 7 {
-    return Assessment(
-        score: 100,
-        headline: "Discard immediately.",
-        reasons: ["Perishable food stored over 7 days."]
-    )
-}
 
     if obs.type == "Cooked/Baked" && perishable && daysStored > 4 {
         return Assessment(
@@ -162,6 +155,14 @@ private func assess(_ obs: FoodObservation) -> Assessment {
             reasons: ["Cooked food stored over 4 days."]
         )
     }
+
+    if perishable && daysStored >= 7 {
+    return Assessment(
+        score: 100,
+        headline: "Discard immediately.",
+        reasons: ["Perishable food stored over 7 days."]
+    )
+}
     
     if seafood.contains(obs.foodName) && obs.fishy && perishable {
         return Assessment(
@@ -325,10 +326,6 @@ struct FormPage: View {
                 Text("Food Conditions")
                     .font(.title)
                     .foregroundColor(.primary)
-                .onChange(of: category) { newValue in
-                selectedFood = ""
-                }
-            }
             
 
                 GroupBox("Category") {
@@ -449,7 +446,13 @@ struct FormPage: View {
             if type.isEmpty { type = types[0] }
         }
     }
+}
+    .onChange(of: category) { newValue in
+                selectedFood = ""
+                }
+            }
 
+    
     func analyze() {
         let totalMinutes =
         storageDay * 24 * 60 +
@@ -470,7 +473,7 @@ struct FormPage: View {
             sticky: sticky,
             mushy: mushy,
             dry: dry,
-            storageMinutesTotal: totalMinutes
+            storageMinutesTotal: totalMinutes,
             storageTempC: storageTemp,
             leaked: leaked
         )
